@@ -4,7 +4,6 @@
 #    / /_\__ \ | | |
 #   /____|___/_| |_|
 #=======================
-
 # [ Base_Setting ] {{{
 export LESSCHARSET=utf-8
 export LANG=ja_JP.UTF-8
@@ -20,17 +19,16 @@ eval "$(rbenv init -)"
 export BROWSER=w3m
 export EDITOR=vim
 
-bindkey -e
+bindkey -v
 autoload colors; colors
 # }}}
-
 
 # [ Prompt_Setting ] {{{
 # ======================
 setopt prompt_subst
-PROMPT="%(?.%{$fg[green]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
-PROMPT2='[%n]> '
-RPROMPT="%{$fg[black]$bg[white]%} [ %~ ] %{${reset_color}%} "
+PROMPT="%(?.%{$fg[cyan]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
+PROMPT2='%{$fg[blue]$bg[black]%} [%n] %{${reset_color}%}>'
+RPROMPT="%{$fg[blue]$bg[black]%} [ %~ ] %{${reset_color}%} "
 SPROMPT="%{$fg[gray]%}%{$suggest%}( ',_>'%) { やれやれ、%{$fg[yellow]%} %B%r%b% %{$fg[gray]%} かね? )%{${reset_color}%}
 %{$fg[blue]%}<(;'A'%)> %{${reset_color}%}{ そう!%{$fg[blue]%}(y)%{${reset_color}%}, 違う!%{$fg[red]%}(n)%{${reset_color}%} : "
 
@@ -44,7 +42,6 @@ zle -N show_buffer_stack
 bindkey "^[q" show_buffer_stack
 # }}}
 
-
 # [ Option_Setting ] {{{
 setopt no_beep
 setopt auto_cd
@@ -52,7 +49,6 @@ setopt auto_pushd
 setopt correct
 setopt magic_equal_subst
 # }}}
-
 
 # [ History_Setting ] {{{
 HISTFILE=~/.zsh/.zhistory
@@ -73,7 +69,6 @@ bindkey "^N" history-beginning-search-forward-end
 function history-all { history -E 1 }
 # }}}
 
-
 # [ ListColor_Setting ] {{{
 export CLICOLOR=true
 export LSCOLORS=gxfxcxdxbxegedabagacad
@@ -82,29 +77,28 @@ zstyle ':completion:*' list-colors \
 'di=36' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
 # }}}
 
-
 # [ Alias_Setting ] {{{
 # =====================
-#alias vim='/usr/local/Cellar/vim/HEAD/bin/vim'
-alias gvim='open -a MacVim.app'
 alias v='vim'
-alias pf='pyful'
+alias gvim='open -a MacVim'
+# alias vim='/usr/local/Cellar/vim/HEAD/bin/vim'
+# jalias pf='pyful'
 # alias rm='trash-put'
+# alias cal='/usr/local/bin/ghcal/ghcal'
 alias cp='cp -i'
 alias mv='mv -i'
 alias df='df -H'
-alias tree='tree -N -C | less -R'
-alias ls='ls -F'
+alias tree='tree -NC | less -R'
+alias ls='ls -FG'
 alias rerc='source ~/.zshrc'
-alias cal='/usr/local/bin/ghcal/ghcal'
 alias remem='$ du -sx / &> /dev/null & sleep 25 && kill $!'
+alias path='pwd | pbcopy'
 alias -g C='| pbcopy'
 function cdls() {
 \cd $1; ls;}
 alias cd='cdls'
 alias qp='qlmanage -p "$@" >& /dev/null'
 #}}}
-
 
 ## [ fu + z ] {{{
 ## ==============
@@ -141,7 +135,6 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 ##	}
 ## }}}
 
-
 ## [ Start_TMUX ] {{{
 ## ==================
 #is_tmux_runnning() {
@@ -174,7 +167,6 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 #figlet lpc://www.com
 ##}}}
 
-
 # [ Web_Search ] {{{
 # =====================
 function web_search {
@@ -202,18 +194,6 @@ function wiki () {
 }
 # }}}
 
-
-## [ Dotfils_Git_Command ] {{{
-#function dots () {
-#local Message=$1	&& shift
-#
-#cd $HOME/.dotfiles;
-# git commit -a -v -m "${Message}";
-# git push;
-# git log -3
-#}
-## }}}
-
 ###-begin-npm-completion-###{{{
 #
 # npm command completion script
@@ -221,7 +201,6 @@ function wiki () {
 # Installation: npm completion >> ~/.bashrc  (or ~/.zshrc)
 # Or, maybe: npm completion > /usr/local/etc/bash_completion.d/npm
 #
-
 COMP_WORDBREAKS=${COMP_WORDBREAKS/=/}
 COMP_WORDBREAKS=${COMP_WORDBREAKS/@/}
 export COMP_WORDBREAKS
