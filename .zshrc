@@ -89,11 +89,7 @@ alias gvim='open -a MacVim'
 # jalias pf='pyful'
 # alias rm='trash-put'
 # alias cal='/usr/local/bin/ghcal/ghcal'
-<<<<<<< HEAD
-alias o='open ./'
-=======
 alias o='open .'
->>>>>>> 8a11aae8de93b4e19b39e6c1ac1993d6a2d5b19c
 alias cp='cp -i'
 alias mv='mv -i'
 alias df='df -H'
