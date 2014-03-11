@@ -5,16 +5,20 @@
 #   /____|___/_| |_|
 #=======================
 # [ Base_Setting ] {{{
+#
 export LESSCHARSET=utf-8
 export LANG=ja_JP.UTF-8
 export OUTPUT_CHARSET=utf-8
 export LC___MESSAGES=c
+
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 export PATH="/usr/local/sbin:$PATH"
+export PATH="$HOME/.bin:$PATH"
+export PATH="$HOME/.tmux/bin:$PATH"
 export PATH="$HOME/.tmux/plugins/bin:$PATH"
 export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
+eval "$(rbenv init - zsh)"
 
 export BROWSER=w3m
 export EDITOR=vim
@@ -26,7 +30,7 @@ autoload colors; colors
 # [ Prompt_Setting ] {{{
 # ======================
 setopt prompt_subst
-PROMPT="%(?.%{$fg[cyan]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
+PROMPT="%(?.%{$fg[green]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
 PROMPT2='%{$fg[blue]$bg[black]%} [%n] %{${reset_color}%}>'
 RPROMPT="%{$fg[blue]$bg[black]%} [ %~ ] %{${reset_color}%} "
 SPROMPT="%{$fg[gray]%}%{$suggest%}( ',_>'%) { やれやれ、%{$fg[yellow]%} %B%r%b% %{$fg[gray]%} かね? )%{${reset_color}%}
@@ -85,10 +89,12 @@ alias gvim='open -a MacVim'
 # jalias pf='pyful'
 # alias rm='trash-put'
 # alias cal='/usr/local/bin/ghcal/ghcal'
+alias o='open ./'
 alias cp='cp -i'
 alias mv='mv -i'
 alias df='df -H'
-alias tree='tree -NC | less -R'
+alias tree='tree -NC'
+alias treee='tree -NC | less -R'
 alias ls='ls -FG'
 alias rerc='source ~/.zshrc'
 alias remem='$ du -sx / &> /dev/null & sleep 25 && kill $!'
@@ -169,29 +175,29 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 
 # [ Web_Search ] {{{
 # =====================
-function web_search {
-local url=$1       && shift
-local delimiter=$1 && shift
-local prefix=$1    && shift
-local query
-
-while [ -n "$1" ]; do
-				if [ -n "$query" ]; then
-								query="${query}${delimiter}${prefix}$1"
-				else
-								query="${prefix}$1"
-				fi
-				shift
-done
-
-w3m "${url}${query}"
-}
-function ggl () {
-  web_search "https://www.google.co.jp/search?&q=" "+" "" $*
-}
-function wiki () {
-  web_search "http://ja.wikipedia.org/w/index.php?search=" "+" "" $*
-}
+# function web_search {
+# local url=$1       && shift
+# local delimiter=$1 && shift
+# local prefix=$1    && shift
+# local query
+#
+# while [ -n "$1" ]; do
+# 				if [ -n "$query" ]; then
+# 								query="${query}${delimiter}${prefix}$1"
+# 				else
+# 								query="${prefix}$1"
+# 				fi
+# 				shift
+# done
+#
+# w3m "${url}${query}"
+# }
+# function ggl () {
+#   web_search "https://www.google.co.jp/search?&q=" "+" "" $*
+# }
+# function wiki () {
+#   web_search "http://ja.wikipedia.org/w/index.php?search=" "+" "" $*
+# }
 # }}}
 
 ###-begin-npm-completion-###{{{
@@ -246,3 +252,4 @@ elif type compctl &>/dev/null; then
   compctl -K _npm_completion npm
 fi
 ###-end-npm-completion-###}}}
+# [[ -s /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator ]] && source /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator
