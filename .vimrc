@@ -71,16 +71,15 @@ NeoBundle 'hokaccha/vim-html5validator'			" Validate html5
 NeoBundle 'mattn/emmet-vim'						" Emmet for Vim
 NeoBundle 'h1mesuke/vim-alignta'				" Text Formating
 NeoBundle 'surround.vim'						" Wrap Word
-NeoBundle 'Valloric/MatchTagAlways'			" MatchTag HighLight
+NeoBundle 'Valloric/MatchTagAlways'				" MatchTag HighLight
 NeoBundle 'matchit.zip'							" HTML Tag Jump
 NeoBundle 'othree/html5.vim'					" Syntax html5
 NeoBundle 'digitaltoad/vim-jade'				" jade Syntax
 
 " CSS ----------------------------------------------------------------
 NeoBundle 'miripiruni/CSScomb-for-Vim.git'		" Sourt CSS Propaty
-NeoBundle 'css_color.vim'						" HEX Color Preview
 NeoBundle 'Sass'								" Syntax Sass
-NeoBundle 'cakebaker/scss-syntax.vim'			" Syntax scss
+NeoBundle 'cakebaker/scss-syntax.vim'			" Syntax scss インデントチェック
 NeoBundle 'hail2u/vim-css3-syntax'				" Syntax css3
 
 " Javascript ---------------------------------------------------------
@@ -221,8 +220,8 @@ let g:indent_guides_enable_on_vim_startup=1
 let g:indent_guides_start_level=2
 let g:indent_guides_guide_size = 1
 let g:indent_guides_auto_colors=0
-autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#333339 guifg=#404040 ctermbg=2 ctermfg=3
-autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#292930 guifg=#333333 ctermbg=4 ctermfg=3
+					autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#333339 guifg=#404040 ctermbg=0 ctermfg=236
+autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#292930 guifg=#333333 ctermbg=236 ctermfg=0
 "let g:indent_guides_color_change_percent = 30
 "}}}
 " open-browser: {{{
@@ -276,8 +275,8 @@ let g:yankring_history_dir = "~/.vim/files/YNK"
 " }}}
 " emmet: {{{
 " ******************************************************
-imap <C-E> <C-Y>,
-let g:user_zen_leader_key = '<C-Y>'
+let g:user_zen_leader_key = '<C-E>'
+let g:user_emmet_expandabbr_key = '<C-E>'
 let g:user_zen_settings = {
 \	'lang': 'ja',
 \	'html': {
@@ -377,8 +376,8 @@ set cursorline
 hi clear CursoeColumn
 hi clear CursorLine
 hi CursorLine gui=underline
-highlight CursorColumn ctermbg=black guibg=black
-highlight CursorLine ctermbg=black guibg=black
+highlight CursorColumn ctermbg=236 guibg=black
+highlight CursorLine ctermbg=236 guibg=black
 set fillchars=vert:\|
 set foldmethod=marker
 hi Folded gui=bold term=standout ctermfg=Blue guibg=blue guifg=black
@@ -408,14 +407,27 @@ set guioptions-=L
 command! -nargs=1 -bang -bar -complete=file Rename sav<bang> <args> | call delete(expand('#:p'))
 
 " tab
-set tabstop=2
-set softtabstop=2
+set tabstop=4
+" set softtabstop=2
 "?????
-set expandtab
+" set expandtab
 set smarttab
 set shiftwidth=2
 set shiftround
 set nowrap
+au BufNewFile,BufRead *.scss  set nowrap tabstop=4 shiftwidth=4 noexpandtab
+function! s:toggle_indent()
+    if &tabstop == 2
+		setlocal nowrap tabstop=4 shiftwidth=4 noexpandtab
+    else
+		setlocal nowrap tabstop=2 shiftwidth=2 expandtab
+    endif
+endfunction
+nnoremap <silent> <Space><Tab> :<C-u>call <SID>toggle_indent()<CR>
+
+
+
+
 
 
 " indent
@@ -748,10 +760,10 @@ augroup MyAutoCmd
 	"autocmd BufNewFile *.html inoremap data<TAB> <div data-=""></div><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>
 
 	" JavaScript dictionaries
-	autocmd FileType javascript :set dictionary=$HOME/vimfiles/dict/javascript.dict,$HOME/vimfiles/dict/jQuery.dict
+	" autocmd FileType javascript :set dictionary=$HOME/vimfiles/dict/javascript.dict,$HOME/vimfiles/dict/jQuery.dict
 
 	" Sass interporation snippets
-	"autocmd filetype scss inoremap ip<TAB> #{}<Left>
+	" autocmd filetype scss inoremap ip<TAB> #{}<Left>
 
 	" xml, html insert end tag
 	autocmd FileType html,xhtml,xml inoremap <buffer> </ </<C-x><C-o>
@@ -760,7 +772,7 @@ augroup MyAutoCmd
 	autocmd FileType html,xhtml inoremap <S-CR> <br /><CR>
 
 	" Disable Indent for HTML file
-	autocmd FileType html,xhtml set indentexpr&
+	" autocmd FileType html,xhtml set indentexpr&
 
 	" delete whitespace
 	autocmd BufWritePre * :%s/\s\+$//e
