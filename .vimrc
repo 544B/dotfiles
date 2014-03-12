@@ -408,14 +408,15 @@ set guioptions-=L
 command! -nargs=1 -bang -bar -complete=file Rename sav<bang> <args> | call delete(expand('#:p'))
 
 " tab
-set tabstop=4
-"set softtabstop=4
+set tabstop=2
+set softtabstop=2
 "?????
-"set expandtab
+set expandtab
 set smarttab
-set shiftwidth=4
+set shiftwidth=2
 set shiftround
 set nowrap
+
 
 " indent
 " 新しい行のインデントを現在行と同じにする
