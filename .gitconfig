@@ -9,13 +9,12 @@
 	interactive = auto
 	grep = auto
 [core]
-	excludesfile = ~/.gitignore  # globalな.gitignoreの指定
-	autocrlf = input             # CRLFを自動変換
+	excludesfile = ~/.gitignore
+	# autocrlf = input  # CRLFを自動変換
 	editor = vim
 	quotepath = false
 [merge]
 	tool = vimdiff
 	ff = false
 [alias]
-	# logをtree表示
 	tree = log --graph --date=short --pretty=format:'%Cgreen%h %cd %Cblue%cn %Creset%s'
