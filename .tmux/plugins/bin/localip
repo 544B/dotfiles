@@ -1,0 +1,2 @@
+#!/bin/sh
+ifconfig en0 inet | grep 'inet' | sed -e 's/^.*inet //' -e 's/ .*//'

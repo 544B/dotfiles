@@ -4,32 +4,35 @@
 #    / /_\__ \ | | |
 #   /____|___/_| |_|
 #=======================
-
 # [ Base_Setting ] {{{
+#
 export LESSCHARSET=utf-8
 export LANG=ja_JP.UTF-8
 export OUTPUT_CHARSET=utf-8
 export LC___MESSAGES=c
+
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 export PATH="/usr/local/sbin:$PATH"
+export PATH="$HOME/.bin:$PATH"
+export PATH="$HOME/.tmux/bin:$PATH"
+export PATH="$HOME/.tmux/plugins/bin:$PATH"
 export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
+eval "$(rbenv init - zsh)"
 
 export BROWSER=w3m
 export EDITOR=vim
 
-bindkey -e
+bindkey -v
 autoload colors; colors
 # }}}
-
 
 # [ Prompt_Setting ] {{{
 # ======================
 setopt prompt_subst
 PROMPT="%(?.%{$fg[green]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
-PROMPT2='[%n]> '
-RPROMPT="%{$fg[black]$bg[white]%} [ %~ ] %{${reset_color}%} "
+PROMPT2='%{$fg[blue]$bg[black]%} [%n] %{${reset_color}%}>'
+RPROMPT="%{$fg[blue]$bg[black]%} [ %~ ] %{${reset_color}%} "
 SPROMPT="%{$fg[gray]%}%{$suggest%}( ',_>'%) { やれやれ、%{$fg[yellow]%} %B%r%b% %{$fg[gray]%} かね? )%{${reset_color}%}
 %{$fg[blue]%}<(;'A'%)> %{${reset_color}%}{ そう!%{$fg[blue]%}(y)%{${reset_color}%}, 違う!%{$fg[red]%}(n)%{${reset_color}%} : "
 
@@ -43,7 +46,6 @@ zle -N show_buffer_stack
 bindkey "^[q" show_buffer_stack
 # }}}
 
-
 # [ Option_Setting ] {{{
 setopt no_beep
 setopt auto_cd
@@ -51,7 +53,6 @@ setopt auto_pushd
 setopt correct
 setopt magic_equal_subst
 # }}}
-
 
 # [ History_Setting ] {{{
 HISTFILE=~/.zsh/.zhistory
@@ -72,7 +73,6 @@ bindkey "^N" history-beginning-search-forward-end
 function history-all { history -E 1 }
 # }}}
 
-
 # [ ListColor_Setting ] {{{
 export CLICOLOR=true
 export LSCOLORS=gxfxcxdxbxegedabagacad
@@ -81,29 +81,30 @@ zstyle ':completion:*' list-colors \
 'di=36' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
 # }}}
 
-
 # [ Alias_Setting ] {{{
 # =====================
-#alias vim='/usr/local/Cellar/vim/HEAD/bin/vim'
-alias gvim='open -a MacVim.app'
 alias v='vim'
-alias pf='pyful'
+alias gvim='open -a MacVim'
+# alias vim='/usr/local/Cellar/vim/HEAD/bin/vim'
+# jalias pf='pyful'
 # alias rm='trash-put'
+# alias cal='/usr/local/bin/ghcal/ghcal'
+alias o='open .'
 alias cp='cp -i'
 alias mv='mv -i'
 alias df='df -H'
-alias tree='tree -N -C | less -R'
-alias ls='ls -F'
+alias tree='tree -NC'
+alias treee='tree -NC | less -R'
+alias ls='ls -FG'
 alias rerc='source ~/.zshrc'
-alias cal='/usr/local/bin/ghcal/ghcal'
 alias remem='$ du -sx / &> /dev/null & sleep 25 && kill $!'
+alias path='pwd | pbcopy'
 alias -g C='| pbcopy'
 function cdls() {
 \cd $1; ls;}
 alias cd='cdls'
 alias qp='qlmanage -p "$@" >& /dev/null'
 #}}}
-
 
 ## [ fu + z ] {{{
 ## ==============
@@ -173,45 +174,32 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 # figlet lpc://www.com
 # #}}}
 
-
 # [ Web_Search ] {{{
 # =====================
-function web_search {
-local url=$1       && shift
-local delimiter=$1 && shift
-local prefix=$1    && shift
-local query
-
-while [ -n "$1" ]; do
-				if [ -n "$query" ]; then
-								query="${query}${delimiter}${prefix}$1"
-				else
-								query="${prefix}$1"
-				fi
-				shift
-done
-
-w3m "${url}${query}"
-}
-function ggl () {
-  web_search "https://www.google.co.jp/search?&q=" "+" "" $*
-}
-function wiki () {
-  web_search "http://ja.wikipedia.org/w/index.php?search=" "+" "" $*
-}
-# }}}
-
-
-## [ Dotfils_Git_Command ] {{{
-#function dots () {
-#local Message=$1	&& shift
+# function web_search {
+# local url=$1       && shift
+# local delimiter=$1 && shift
+# local prefix=$1    && shift
+# local query
 #
-#cd $HOME/.dotfiles;
-# git commit -a -v -m "${Message}";
-# git push;
-# git log -3
-#}
-## }}}
+# while [ -n "$1" ]; do
+# 				if [ -n "$query" ]; then
+# 								query="${query}${delimiter}${prefix}$1"
+# 				else
+# 								query="${prefix}$1"
+# 				fi
+# 				shift
+# done
+#
+# w3m "${url}${query}"
+# }
+# function ggl () {
+#   web_search "https://www.google.co.jp/search?&q=" "+" "" $*
+# }
+# function wiki () {
+#   web_search "http://ja.wikipedia.org/w/index.php?search=" "+" "" $*
+# }
+# }}}
 
 ###-begin-npm-completion-###{{{
 #
@@ -220,7 +208,6 @@ function wiki () {
 # Installation: npm completion >> ~/.bashrc  (or ~/.zshrc)
 # Or, maybe: npm completion > /usr/local/etc/bash_completion.d/npm
 #
-
 COMP_WORDBREAKS=${COMP_WORDBREAKS/=/}
 COMP_WORDBREAKS=${COMP_WORDBREAKS/@/}
 export COMP_WORDBREAKS
@@ -266,3 +253,4 @@ elif type compctl &>/dev/null; then
   compctl -K _npm_completion npm
 fi
 ###-end-npm-completion-###}}}
+# [[ -s /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator ]] && source /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator
