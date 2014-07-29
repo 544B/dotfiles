@@ -15,6 +15,7 @@ set fileencodings=utf-8,sjis,japan,iso-2022-jp
 " [ 2. Backup,Swap,info ] {{{
 set backupdir=~/.vim/files/BAK
 set directory=~/.vim/files/SWP
+set undodir=~/.vim/files/UND
 set viminfo='50,\"1000,:0,n~/.vim/files/.viminfo
 
 " バッファの一覧・移動・削除。QuickBuf使うまでもないときに
@@ -55,6 +56,7 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 
 " Plugin List ========================================================
 NeoBundle 'Shougo/neocomplcache'
+NeoBundle 'Shougo/neocomplete.vim'
 NeoBundle 'Shougo/neosnippet.vim'
 NeoBundle 'Shougo/neosnippet-snippets'
 NeoBundle 'Shougo/vimfiler'
@@ -65,6 +67,7 @@ NeoBundle 'h1mesuke/unite-outline'
 NeoBundle 'tpope/vim-fugitive'
 NeoBundle 'kien/ctrlp.vim'
 NeoBundle 'flazz/vim-colorschemes'
+NeoBundle 'thinca/vim-quickrun'
 
 " HTML ---------------------------------------------------------------
 NeoBundle 'hokaccha/vim-html5validator'			" Validate html5
@@ -72,7 +75,6 @@ NeoBundle 'mattn/emmet-vim'						" Emmet for Vim
 NeoBundle 'h1mesuke/vim-alignta'				" Text Formating
 NeoBundle 'surround.vim'						" Wrap Word
 NeoBundle 'Valloric/MatchTagAlways'				" MatchTag HighLight
-NeoBundle 'matchit.zip'							" HTML Tag Jump
 NeoBundle 'othree/html5.vim'					" Syntax html5
 NeoBundle 'digitaltoad/vim-jade'				" jade Syntax
 
@@ -84,10 +86,13 @@ NeoBundle 'hail2u/vim-css3-syntax'				" Syntax css3
 
 " Javascript ---------------------------------------------------------
 NeoBundle 'basyura/jslint.vim'					" Validate jslint
+" NeoBundle 'mattn/jscomplete-vim'				" Snipet
 NeoBundle 'pangloss/vim-javascript'				" JavascriptIndnt
 NeoBundle 'JavaScript-syntax'					" Syntax Javascript
+NeoBundle 'jQuery'								" Syntax jQuery
 NeoBundle 'kchmck/vim-coffee-script'			" Syntax CoffeeScript
 NeoBundle 'mklabs/vim-backbone'					" Syntax Backbone
+NeoBundle 'marijnh/tern_for_vim'
 
 " Other --------------------------------------------------------------
 NeoBundle 'sakuraiyuta/commentout.vim'			" Toggle CommentOut
@@ -95,7 +100,6 @@ NeoBundle 'scrooloose/syntastic'				" SourceCode Validation
 NeoBundle 'kana/vim-textobj-user'				" UserSet TextObj
 NeoBundle 'sjl/gundo.vim'						" Undo Log
 NeoBundle 'terryma/vim-multiple-cursors'		" Multi Cursor
-NeoBundle 'kana/vim-smartinput'					" ()''{} OneSet Input
 NeoBundle 'Lokaltog/vim-easymotion'				" Jump to Some Key
 NeoBundle 'nathanaelkane/vim-indent-guides'		" IndentGuide
 NeoBundle 'itchyny/lightline.vim'				" StatusLine Custom
@@ -127,27 +131,163 @@ filetype indent on
 NeoBundleCheck
 " }}}
 " [ 4. Plugins Setting  ] {{{
+
+" unite.vim: {{{
+" The prefix key
+nnoremap [unite] <Nop>
+nmap <Leader>f [unite]
+
+" unite.vim keymap
+" https://github.com/alwei/dotfiles/blob/3760650625663f3b08f24bc75762ec843ca7e112/.vimrc
+nnoremap [unite]u :<C-u> -no-split<Space>
+nnoremap <silent> [unite]f :<C-u>Unite<Space>buffer<CR>
+nnoremap <silent> [unite]b :<C-u>Unite<Space>bookmark<CR>
+nnoremap <silent> [unite]m :<C-u>Unite<Space>file_mru<CR>
+nnoremap <silent> [unite]r :<C-u>UniteWithBufferDir<CR>
+nnoremap <silent> ,vr :UniteResume<CR>
+
+" vinarise
+let g:vinarise_enable_auto_detect = 1
+
+" unite-build map
+nnoremap <silent> ,vb :Unite build<CR>
+nnoremap <silent> ,vcb :Unite build:!<CR>
+nnoremap <silent> ,vch :UnitebuildClearHighlight<CR>
+
+" unite-grepのバックエンドをagに切り替える
+" http://qiita.com/items/c8962f9325a5433dc50d
+let g:unite_source_grep_command = 'ag'
+let g:unite_source_grep_default_opts = '--nocolor --nogroup'
+let g:unite_source_grep_recursive_opt = ''
+let g:unite_source_grep_max_candidates = 200
+
+" unite-grepのキーマップ
+" 選択した文字列をunite-grep
+" https://github.com/shingokatsushima/dotfiles/blob/master/.vimrc
+vnoremap /g y:Unite grep::-iHRn:<C-R>=escape(@", '\\.*$^[]')<CR><CR>
+" }}}
+" neocomplete.vim: {{{
+"Note: This option must set it in .vimrc(_vimrc).  NOT IN .gvimrc(_gvimrc)!
+" Disable AutoComplPop.
+let g:acp_enableAtStartup = 0
+" Use neocomplete.
+let g:neocomplete#enable_at_startup = 1
+" Use smartcase.
+let g:neocomplete#enable_smart_case = 1
+" Set minimum syntax keyword length.
+let g:neocomplete#sources#syntax#min_keyword_length = 3
+let g:neocomplete#lock_buffer_name_pattern = '\*ku\*'
+
+" Define dictionary.
+let g:neocomplete#sources#dictionary#dictionaries = {
+    \ 'default' : '',
+    \ 'vimshell' : $HOME.'/.vimshell_hist',
+    \ 'scheme' : $HOME.'/.gosh_completions'
+        \ }
+
+" Define keyword.
+if !exists('g:neocomplete#keyword_patterns')
+    let g:neocomplete#keyword_patterns = {}
+endif
+let g:neocomplete#keyword_patterns['default'] = '\h\w*'
+
+" Plugin key-mappings.
+inoremap <expr><C-g>     neocomplete#undo_completion()
+inoremap <expr><C-l>     neocomplete#complete_common_string()
+
+" Recommended key-mappings.
+" <CR>: close popup and save indent.
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return neocomplete#close_popup() . "\<CR>"
+  " For no inserting <CR> key.
+  "return pumvisible() ? neocomplete#close_popup() : "\<CR>"
+endfunction
+" <TAB>: completion.
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" <C-h>, <BS>: close popup and delete backword char.
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><C-y>  neocomplete#close_popup()
+inoremap <expr><C-e>  neocomplete#cancel_popup()
+" Close popup by <Space>.
+"inoremap <expr><Space> pumvisible() ? neocomplete#close_popup() : "\<Space>"
+
+" For cursor moving in insert mode(Not recommended)
+"inoremap <expr><Left>  neocomplete#close_popup() . "\<Left>"
+"inoremap <expr><Right> neocomplete#close_popup() . "\<Right>"
+"inoremap <expr><Up>    neocomplete#close_popup() . "\<Up>"
+"inoremap <expr><Down>  neocomplete#close_popup() . "\<Down>"
+" Or set this.
+"let g:neocomplete#enable_cursor_hold_i = 1
+" Or set this.
+"let g:neocomplete#enable_insert_char_pre = 1
+
+" AutoComplPop like behavior.
+"let g:neocomplete#enable_auto_select = 1
+
+" Shell like behavior(not recommended).
+"set completeopt+=longest
+"let g:neocomplete#enable_auto_select = 1
+"let g:neocomplete#disable_auto_complete = 1
+"inoremap <expr><TAB>  pumvisible() ? "\<Down>" : "\<C-x>\<C-u>"
+
+" Enable omni completion.
+" autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+" autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+" autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+" autocmd FileType javascript setlocal omnifunc=tern#Complete
+
+" autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+" autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+" Enable heavy omni completion.
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+"let g:neocomplete#sources#omni#input_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
+"let g:neocomplete#sources#omni#input_patterns.c = '[^.[:digit:] *\t]\%(\.\|->\)'
+"let g:neocomplete#sources#omni#input_patterns.cpp = '[^.[:digit:] *\t]\%(\.\|->\)\|\h\w*::'
+
+" For perlomni.vim setting.
+" https://github.com/c9s/perlomni.vim
+let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
+"}}}
+" neosnippet.vim: {{{
+
+let bundle = neobundle#get('neosnippet.vim')
+function! bundle.hooks.on_source(bundle)
+"  imap <silent>L <Plug>(neosnippet_jump_or_expand)
+"  smap <silent>L <Plug>(neosnippet_jump_or_expand)
+"  xmap <silent>L <Plug>(neosnippet_start_unite_snippet_target)
+"  imap <silent>K <Plug>(neosnippet_expand_or_jump)
+"  smap <silent>K <Plug>(neosnippet_expand_or_jump)
+"  imap <silent>G <Plug>(neosnippet_expand)
+"  imap <silent>S <Plug>(neosnippet_start_unite_snippet)
+"  xmap <silent>o <Plug>(neosnippet_register_oneshot_snippet)
+"  xmap <silent>U <Plug>(neosnippet_expand_target)
+
+  " SuperTab like snippets behavior.
+  imap <expr><TAB> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : pumvisible() ? "\<C-n>" : "\<TAB>"
+  smap <expr><TAB> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+
+  let g:neosnippet#enable_snipmate_compatibility = 1
+
+  inoremap <expr><C-g>     neocomplete#undo_completion()
+  inoremap <expr><C-l>     neocomplete#complete_common_string()
+  " inoremap <expr><C-g>     neocomplcache#undo_completion()
+  " inoremap <expr><C-l>     neocomplcache#complete_common_string()
+
+  " Snippets file dir
+endfunction
+
+unlet bundle
+
+nnoremap <silent> [Window]f              :<C-u>Unite neosnippet/user neosnippet/runtime<CR>
+"}}}
 " matchit.vim: {{{
 " ******************************************************
 source $VIMRUNTIME/macros/matchit.vim
 "}}}
-" Plugin key-mappings.
-imap <C-k>     <Plug>(neosnippet_expand_or_jump)
-smap <C-k>     <Plug>(neosnippet_expand_or_jump)
-xmap <C-k>     <Plug>(neosnippet_expand_target)
-
-" SuperTab like snippets behavior.
-imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-  \ "\<Plug>(neosnippet_expand_or_jump)"
-  \: pumvisible() ? "\<C-n>" : "\<TAB>"
-  smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-  \ "\<Plug>(neosnippet_expand_or_jump)"
-  \: "\<TAB>"
-
-" For snippet_complete marker.
-if has('conceal')
-  set conceallevel=2 concealcursor=i
-endif
 " vimshell {{{
 " -
 " ******************************************************
@@ -198,6 +338,12 @@ nnoremap <silent> ,irh :VimShell iexe rhino<CR>
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_mode_map = { 'mode': 'active',
             \ 'active_filetypes': []}
+let g:syntastic_javascript_checker = "jshint"
+
+
+" autocmd FileType javascript
+"   \ :setl omnifunc=jscomplete#CompleteJS
+" let g:jscomplete_use = ['dom', 'moz']
 "}}}
 " html5.vim: {{{
 " - https://github.com/othree/html5.vim
@@ -275,20 +421,17 @@ let g:yankring_history_dir = "~/.vim/files/YNK"
 " }}}
 " emmet: {{{
 " ******************************************************
-let g:user_zen_leader_key = '<C-E>'
-let g:user_emmet_expandabbr_key = '<C-E>'
-let g:user_zen_settings = {
+let g:user_emmet_leader_key = '<C-e>'
+let g:user_emmet_expandabbr_key = '<tab>'
+let g:user_emmet_settings = {
 \	'lang': 'ja',
 \	'html': {
-\		'indentation': '',
-\		'snippets': {
-\			'script:jq': "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js\" type=\"text/javascript\"></script>",
-\		},
+\		'indentation': ''
 \	},
 \	'css': {
 \		'filters': 'fc'
 \	},
-\}
+\ }
 " }}}
 " sass: {{{
 " ******************************************************
@@ -345,6 +488,8 @@ let g:mta_filetypes = {
 let g:mta_use_matchparen_group = 0
 highlight MatchTag ctermfg=black ctermbg=lightgreen guifg=black guibg=lightgreen
 "}}}
+" Quickrun
+nnoremap <silent> <C-q> :QuickRun<CR>
 " }}}
 " [ 5. Display          ] {{{
 set number
@@ -409,7 +554,6 @@ command! -nargs=1 -bang -bar -complete=file Rename sav<bang> <args> | call delet
 " tab
 set tabstop=4
 " set softtabstop=2
-"?????
 " set expandtab
 set smarttab
 set shiftwidth=2
@@ -424,11 +568,6 @@ function! s:toggle_indent()
     endif
 endfunction
 nnoremap <silent> <Space><Tab> :<C-u>call <SID>toggle_indent()<CR>
-
-
-
-
-
 
 " indent
 " 新しい行のインデントを現在行と同じにする
@@ -523,7 +662,7 @@ nnoremap <silent> <S-Up>    :5wincmd -<CR>
 nnoremap <silent> <S-Down>  :5wincmd +<CR>
 set scrolloff=3
 " 検索時、「/」の入力をエスケープする
-"cnoremap / getcmdtype() == '/' ? '\/': '/'
+" cnoremap / getcmdtype() == '/' ? '\/': '/'
 
 " for USkey
 nnoremap ; :
@@ -561,10 +700,9 @@ cnoremap <C-n> <Down>
 cnoremap <Leader><Leader> ~/
 
 " 現在のファイルをブラウザで開く
-noremap <F12> :silent ! start chrome.exe "%:p"<CR>
-noremap <Leader>0 :silent ! start firefox.exe "%:p"<CR>
-noremap <Leader>9 :silent ! start IEXPLORE.EXE "%:p"<CR>
-noremap <Leader>8 :silent ! start Safari.exe "%:p"<CR>
+noremap <F12> :silent ! open chrome.app "%:p"<CR>
+noremap <Leader>0 :silent ! open firefox.app "%:p"<CR>
+noremap <Leader>9 :silent ! open Safari.app "%:p"<CR>
 
 " help shortcut key
 nnoremap <C-h>  :<C-u>help<Space>
@@ -581,11 +719,7 @@ inoremap <silent> <C-j> <C-^>
 set grepformat=%f:%l:%m,%f:%l%m,%f\ \ %l%m,%f
 set grepprg=grep\ -nH
 
-" 現在のファイルをブラウザで開く
-noremap <F12> :silent ! start chrome.app "%:p"<CR>
-noremap <Leader>0 :silent ! start firefox.exe "%:p"<CR>
-noremap <Leader>9 :silent ! start IEXPLORE.EXE "%:p"<CR>
-noremap <Leader>8 :silent ! start Safari.exe "%:p"<CR>
+source $VIMRUNTIME/macros/matchit.vim
 " }}}
 " [ 7. For CUI          ] {{{
 set ttyfast
@@ -744,9 +878,9 @@ augroup MyAutoCmd
     "autocmd BufNewFile,BufRead * set expandtab
 
     " go to file!
-    autocmd FileType html,xhtml setlocal includeexpr=substitute(v:fname,'^\\/','','') | setlocal path+=;/
+    autocmd FileType html,xhtml,shtml setlocal includeexpr=substitute(v:fname,'^\\/','','') | setlocal path+=;/
 
-    " Custom folding
+	" Custom folding
     "autocmd BufEnter * if &filetype == "javascript" | set foldmarker={,} | set foldlevel=3 | set foldcolumn=7 | endif
     "
     " for Sass.vim

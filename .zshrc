@@ -104,6 +104,9 @@ function cdls() {
 \cd $1; ls;}
 alias cd='cdls'
 alias qp='qlmanage -p "$@" >& /dev/null'
+alias evn='evned $(date +"MEMO_%y%m%d_%H%M") memo'
+alias imgsize='sips --getProperty pixelHeight --getProperty pixelWidth ./*'
+alias imgTag='bash ~/.bin/imgTag.sh'
 #}}}
 
 ## [ fu + z ] {{{
@@ -200,6 +203,27 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 # }
 # }}}
 
+cdf() {
+  target=`osascript -e 'tell application "Finder" to if (count of Finder windows) > 0 then get POSIX path of (target of front Finder window as text)'`
+  if [ "$target" != "" ]; then
+	cd "$target"; pwd
+  else
+	echo 'No Finder window found' >&2
+  fi
+}
+
+man() {
+  env \
+	LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+	LESS_TERMCAP_md=$(printf "\e[1;31m") \
+	LESS_TERMCAP_me=$(printf "\e[0m") \
+	LESS_TERMCAP_se=$(printf "\e[0m") \
+	LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+	LESS_TERMCAP_ue=$(printf "\e[0m") \
+	LESS_TERMCAP_us=$(printf "\e[1;32m") \
+	man "$@"
+
+}
 ###-begin-npm-completion-###{{{
 #
 # npm command completion script
@@ -253,3 +277,32 @@ elif type compctl &>/dev/null; then
 fi
 ###-end-npm-completion-###}}}
 # [[ -s /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator ]] && source /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator
+export PYENV_ROOT="${HOME}/.pyenv"
+if [ -d "${PYENV_ROOT}" ]; then
+    export PATH=${PYENV_ROOT}/bin:$PATH
+    eval "$(pyenv init -)"
+fi
+
+
+if [ -x "`which go`" ]; then
+  export GOROOT=`go env GOROOT`
+  export GOPATH=$HOME/.go
+  export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+fi
+
+
+function peco-select-history() {
+local tac
+if which tac > /dev/null; then
+  tac="tac"
+else
+  tac="tail -r"
+fi
+BUFFER=$(history -n 1 | \
+  eval $tac | \
+  peco --query "$LBUFFER")
+CURSOR=$#BUFFER
+zle clear-screen
+}
+zle -N peco-select-history
+bindkey '^r' peco-select-history
