@@ -92,7 +92,7 @@ NeoBundle 'JavaScript-syntax'					" Syntax Javascript
 NeoBundle 'jQuery'								" Syntax jQuery
 NeoBundle 'kchmck/vim-coffee-script'			" Syntax CoffeeScript
 NeoBundle 'mklabs/vim-backbone'					" Syntax Backbone
-NeoBundle 'marijnh/tern_for_vim'
+" NeoBundle 'marijnh/tern_for_vim'
 
 " Other --------------------------------------------------------------
 NeoBundle 'sakuraiyuta/commentout.vim'			" Toggle CommentOut
@@ -488,8 +488,9 @@ let g:mta_filetypes = {
 let g:mta_use_matchparen_group = 0
 highlight MatchTag ctermfg=black ctermbg=lightgreen guifg=black guibg=lightgreen
 "}}}
-" Quickrun
+" Quickrun {{{
 nnoremap <silent> <C-q> :QuickRun<CR>
+" }}}
 " }}}
 " [ 5. Display          ] {{{
 set number
