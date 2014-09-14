@@ -16,9 +16,15 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 export PATH="/usr/local/sbin:$PATH"
 export PATH="$HOME/.bin:$PATH"
 export PATH="$HOME/.tmux/bin:$PATH"
+export PATH="$HOME/.redis/src:$PATH"
 export PATH="$HOME/.tmux/plugins/bin:$PATH"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init - zsh)"
+export PYENV_ROOT="${HOME}/.pyenv"
+if [ -d "${PYENV_ROOT}" ]; then
+    export PATH=${PYENV_ROOT}/bin:$PATH
+    eval "$(pyenv init -)"
+fi
 
 export BROWSER=w3m
 export EDITOR=vim
@@ -32,15 +38,29 @@ autoload colors; colors
 setopt prompt_subst
 PROMPT="%(?.%{$fg[green]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
 PROMPT2='%{$fg[blue]$bg[black]%} [%n] %{${reset_color}%}>'
-RPROMPT="%{$fg[blue]$bg[black]%} [ %~ ] %{${reset_color}%} "
+RPROMPT="%{$fg[blue]%}%{${reset_color}%}%{$fg[blue]$bg[black]%} [ %~ ] %{${reset_color}%} "
 SPROMPT="%{$fg[gray]%}%{$suggest%}( ',_>'%) { やれやれ、%{$fg[yellow]%} %B%r%b% %{$fg[gray]%} かね? )%{${reset_color}%}
 %{$fg[blue]%}<(;'A'%)> %{${reset_color}%}{ そう!%{$fg[blue]%}(y)%{${reset_color}%}, 違う!%{$fg[red]%}(n)%{${reset_color}%} : "
 
+function zle-line-init zle-keymap-select {
+case $KEYMAP in
+	vicmd)
+		PROMPT="%(?.%{$fg[blue]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
+		;;
+	main|viins)
+		PROMPT="%(?.%{$fg[green]%}.%{$fg[red]%})%(?!\(*'A'%)/!\(#'A'%)/)%{${reset_color}%} { "
+		;;
+esac
+zle reset-prompt
+}
+zle -N zle-line-init
+zle -N zle-keymap-select
+
 # commandLine_stac
 show_buffer_stack() {
-				POSTDISPLAY="
-				(*'x') { $LBUFFER )"
-				zle push-line
+	POSTDISPLAY="
+	(*'x') < $LBUFFER )"
+	zle push-line
 }
 zle -N show_buffer_stack
 bindkey "^[q" show_buffer_stack
@@ -84,7 +104,11 @@ zstyle ':completion:*' list-colors \
 # [ Alias_Setting ] {{{
 # =====================
 alias v='vim'
-alias gvim='open -a MacVim'
+alias gvim='~/.vim/mvim --remote-tab-silent'
+alias vimr='open -a ~/_work/app/VimR.app'
+alias clrp='open -a ~/_work/app/Colors.app'
+
+alias fmerge='open -a FileMerge.app'
 # alias vim='/usr/local/Cellar/vim/HEAD/bin/vim'
 # jalias pf='pyful'
 # alias rm='trash-put'
@@ -93,26 +117,44 @@ alias o='open .'
 alias cp='cp -i'
 alias mv='mv -i'
 alias df='df -H'
-alias tree='tree -NC'
-alias treee='tree -NC | less -R'
+alias treec='tree -NC'
+alias grep='grep -n --color=auto'
+alias treee='tree | less -R'
 alias ls='ls -FG'
+alias edrc='vim ~/.zshrc'
 alias rerc='source ~/.zshrc'
 alias remem='$ du -sx / &> /dev/null & sleep 25 && kill $!'
-alias path='pwd | pbcopy'
+alias path='pwd | ruby -pe 'chomp' | pbcopy'
+alias cdp='cd "`pbpaste`"'
+alias cds='cd ~/_work/site/ && ls -Tl'
 alias -g C='| pbcopy'
-function cdls() {
-\cd $1; ls;}
-alias cd='cdls'
+
+# function cdls() {
+# alias -- ..="cd .."
+# alias -- ...="cd .. ; cd .."
+# alias -- ....="cd .. ; cd .. ; cd .."
+# \cd $1; ls;}
+# alias cd='cdls'
+
+alias evn='evned $(date +"MEMO_%y%m%d_%H%M")'
 alias qp='qlmanage -p "$@" >& /dev/null'
+alias imgsize='sips --getProperty pixelHeight --getProperty pixelWidth ./*'
+alias imgTag='bash ~/Github/workforworks/imgTag.sh'
+alias pswd='cat ~/_work/docs/PASS/.pswd'
 #}}}
 
-## [ fu + z ] {{{
+# [ fu + z ] {{{
 ## ==============
 ## auto-fu.zsh
 #{ . ~/.zsh/auto-fu; auto-fu-install; }
 #zstyle ':completion:*' completer _oldlist _complete
 #zstyle ':auto-fu:highlight' input fg=white
 #zstyle ':auto-fu:highlight' completion fg=black,bold
+#zstyle ':auto-fu:highlight' completion/one fg=white,bold,underline
+#zstyle ':auto-fu:highlight' completion fg=black,bold
+#zstyle ':auto-fu:highlight' completion/one fg=white,bold,underline
+#zstyle ':auto-fu:highlight' completion fg=black,bold
+#zstyle ':auto-fu:highlight' completion/one fg=white,bold,underline
 #zstyle ':auto-fu:highlight' completion/one fg=white,bold,underline
 #zstyle ':auto-fu:var' postdisplay $'\n( \',_>`) { ふぅ。。。 )'
 #zstyle ':auto-fu:var' track-keymap-skip opp
@@ -141,7 +183,7 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 ##	}
 ## }}}
 
-## [ Start_TMUX ] {{{
+# [ Start_TMUX ] {{{
 ## ==================
 #is_tmux_runnning() {
 #				[ ! -z "$TMUX" ]
@@ -200,7 +242,7 @@ alias qp='qlmanage -p "$@" >& /dev/null'
 # }
 # }}}
 
-###-begin-npm-completion-###{{{
+# [ npm-completion ] {{{
 #
 # npm command completion script
 #
@@ -212,44 +254,61 @@ COMP_WORDBREAKS=${COMP_WORDBREAKS/@/}
 export COMP_WORDBREAKS
 
 if type complete &>/dev/null; then
-  _npm_completion () {
-    local si="$IFS"
-    IFS=$'\n' COMPREPLY=($(COMP_CWORD="$COMP_CWORD" \
-                           COMP_LINE="$COMP_LINE" \
-                           COMP_POINT="$COMP_POINT" \
-                           npm completion -- "${COMP_WORDS[@]}" \
-                           2>/dev/null)) || return $?
-    IFS="$si"
-  }
-  complete -F _npm_completion npm
+	_npm_completion () {
+		local si="$IFS"
+		IFS=$'\n' COMPREPLY=($(COMP_CWORD="$COMP_CWORD" \
+			COMP_LINE="$COMP_LINE" \
+			COMP_POINT="$COMP_POINT" \
+			npm completion -- "${COMP_WORDS[@]}" \
+			2>/dev/null)) || return $?
+		IFS="$si"
+	}
+	complete -F _npm_completion npm
 elif type compdef &>/dev/null; then
-  _npm_completion() {
-    si=$IFS
-    compadd -- $(COMP_CWORD=$((CURRENT-1)) \
-                 COMP_LINE=$BUFFER \
-                 COMP_POINT=0 \
-                 npm completion -- "${words[@]}" \
-                 2>/dev/null)
-    IFS=$si
-  }
-  compdef _npm_completion npm
+	_npm_completion() {
+		si=$IFS
+		compadd -- $(COMP_CWORD=$((CURRENT-1)) \
+			COMP_LINE=$BUFFER \
+			COMP_POINT=0 \
+			npm completion -- "${words[@]}" \
+			2>/dev/null)
+		IFS=$si
+	}
+	compdef _npm_completion npm
 elif type compctl &>/dev/null; then
-  _npm_completion () {
-    local cword line point words si
-    read -Ac words
-    read -cn cword
-    let cword-=1
-    read -l line
-    read -ln point
-    si="$IFS"
-    IFS=$'\n' reply=($(COMP_CWORD="$cword" \
-                       COMP_LINE="$line" \
-                       COMP_POINT="$point" \
-                       npm completion -- "${words[@]}" \
-                       2>/dev/null)) || return $?
-    IFS="$si"
-  }
-  compctl -K _npm_completion npm
+	_npm_completion () {
+		local cword line point words si
+		read -Ac words
+		read -cn cword
+		let cword-=1
+		read -l line
+		read -ln point
+		si="$IFS"
+		IFS=$'\n' reply=($(COMP_CWORD="$cword" \
+			COMP_LINE="$line" \
+			COMP_POINT="$point" \
+			npm completion -- "${words[@]}" \
+			2>/dev/null)) || return $?
+		IFS="$si"
+	}
+	compctl -K _npm_completion npm
 fi
-###-end-npm-completion-###}}}
+
+
+
+
+# }}}
+
+# {{{ [ functions ]
+cdf() {
+	target=`osascript -e 'tell application "Finder" to if (count of Finder windows) > 0 then get POSIX path of (target of front Finder window as text)'`
+	if [ "$target" != "" ]; then
+		cd "$target"; pwd
+	else
+		echo 'No Finder window found' >&2
+	fi
+}
+# }}}
+
+
 # [[ -s /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator ]] && source /Users/staffmbp2011/.tmuxinator/scripts/tmuxinator

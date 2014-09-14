@@ -10,7 +10,7 @@ set nocompatible
 filetype off
 set fileformats=unix,dos,mac
 set fileencoding=utf-8
-set fileencodings=utf-8,sjis,japan,iso-2022-jp
+set fileencodings=utf-8,sjis,japan,iso-2022-jp,euc-jp
 " }}}
 " [ 2. Backup,Swap,info ] {{{
 set backupdir=~/.vim/files/BAK
@@ -54,9 +54,10 @@ call neobundle#rc(expand('~/.vim/bundle/'))
 NeoBundleFetch 'Shougo/neobundle.vim'
 
 " Plugin List ========================================================
-NeoBundle 'Shougo/neocomplcache'
+NeoBundle 'Shougo/neocomplete.vim'
 NeoBundle 'Shougo/neosnippet.vim'
 NeoBundle 'Shougo/neosnippet-snippets'
+NeoBundle 'Shougo/vimproc'
 NeoBundle 'Shougo/vimfiler'
 NeoBundle 'Shougo/vimshell'
 NeoBundle 'Shougo/unite.vim'
@@ -65,6 +66,7 @@ NeoBundle 'h1mesuke/unite-outline'
 NeoBundle 'tpope/vim-fugitive'
 NeoBundle 'kien/ctrlp.vim'
 NeoBundle 'flazz/vim-colorschemes'
+NeoBundle 'thinca/vim-quickrun'
 
 " HTML ---------------------------------------------------------------
 NeoBundle 'hokaccha/vim-html5validator'			" Validate html5
@@ -72,7 +74,6 @@ NeoBundle 'mattn/emmet-vim'						" Emmet for Vim
 NeoBundle 'h1mesuke/vim-alignta'				" Text Formating
 NeoBundle 'surround.vim'						" Wrap Word
 NeoBundle 'Valloric/MatchTagAlways'				" MatchTag HighLight
-NeoBundle 'matchit.zip'							" HTML Tag Jump
 NeoBundle 'othree/html5.vim'					" Syntax html5
 NeoBundle 'digitaltoad/vim-jade'				" jade Syntax
 
@@ -81,6 +82,7 @@ NeoBundle 'miripiruni/CSScomb-for-Vim.git'		" Sourt CSS Propaty
 NeoBundle 'Sass'								" Syntax Sass
 NeoBundle 'cakebaker/scss-syntax.vim'			" Syntax scss インデントチェック
 NeoBundle 'hail2u/vim-css3-syntax'				" Syntax css3
+NeoBundle 'ap/vim-css-color'					" CSS Color
 
 " Javascript ---------------------------------------------------------
 NeoBundle 'basyura/jslint.vim'					" Validate jslint
@@ -88,6 +90,7 @@ NeoBundle 'pangloss/vim-javascript'				" JavascriptIndnt
 NeoBundle 'JavaScript-syntax'					" Syntax Javascript
 NeoBundle 'kchmck/vim-coffee-script'			" Syntax CoffeeScript
 NeoBundle 'mklabs/vim-backbone'					" Syntax Backbone
+NeoBundle 'marijnh/tern_for_vim'
 
 " Other --------------------------------------------------------------
 NeoBundle 'sakuraiyuta/commentout.vim'			" Toggle CommentOut
@@ -95,6 +98,7 @@ NeoBundle 'scrooloose/syntastic'				" SourceCode Validation
 NeoBundle 'kana/vim-textobj-user'				" UserSet TextObj
 NeoBundle 'sjl/gundo.vim'						" Undo Log
 NeoBundle 'terryma/vim-multiple-cursors'		" Multi Cursor
+NeoBundle 'castor4bit/inside-motion.vim'
 NeoBundle 'kana/vim-smartinput'					" ()''{} OneSet Input
 NeoBundle 'Lokaltog/vim-easymotion'				" Jump to Some Key
 NeoBundle 'nathanaelkane/vim-indent-guides'		" IndentGuide
@@ -127,11 +131,101 @@ filetype indent on
 NeoBundleCheck
 " }}}
 " [ 4. Plugins Setting  ] {{{
-" matchit.vim: {{{
-" ******************************************************
-source $VIMRUNTIME/macros/matchit.vim
-"}}}
+" NeoComplete {{{
+"Note: This option must set it in .vimrc(_vimrc).  NOT IN .gvimrc(_gvimrc)!
+" Disable AutoComplPop.
+let g:acp_enableAtStartup = 0
+" Use neocomplete.
+let g:neocomplete#enable_at_startup = 1
+" Use smartcase.
+let g:neocomplete#enable_smart_case = 1
+" Set minimum syntax keyword length.
+let g:neocomplete#sources#syntax#min_keyword_length = 3
+let g:neocomplete#lock_buffer_name_pattern = '\*ku\*'
+
+" Define dictionary.
+let g:neocomplete#sources#dictionary#dictionaries = {
+    \ 'default' : '',
+    \ 'vimshell' : $HOME.'/.vimshell_hist',
+    \ 'scheme' : $HOME.'/.gosh_completions'
+        \ }
+
+" Define keyword.
+if !exists('g:neocomplete#keyword_patterns')
+    let g:neocomplete#keyword_patterns = {}
+endif
+let g:neocomplete#keyword_patterns['default'] = '\h\w*'
+
 " Plugin key-mappings.
+inoremap <expr><C-g>     neocomplete#undo_completion()
+inoremap <expr><C-l>     neocomplete#complete_common_string()
+
+" Recommended key-mappings.
+" <CR>: close popup and save indent.
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return neocomplete#close_popup() . "\<CR>"
+  " For no inserting <CR> key.
+  "return pumvisible() ? neocomplete#close_popup() : "\<CR>"
+endfunction
+" <TAB>: completion.
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" <C-h>, <BS>: close popup and delete backword char.
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><C-y>  neocomplete#close_popup()
+inoremap <expr><C-e>  neocomplete#cancel_popup()
+" Close popup by <Space>.
+"inoremap <expr><Space> pumvisible() ? neocomplete#close_popup() : "\<Space>"
+
+" For cursor moving in insert mode(Not recommended)
+"inoremap <expr><Left>  neocomplete#close_popup() . "\<Left>"
+"inoremap <expr><Right> neocomplete#close_popup() . "\<Right>"
+"inoremap <expr><Up>    neocomplete#close_popup() . "\<Up>"
+"inoremap <expr><Down>  neocomplete#close_popup() . "\<Down>"
+" Or set this.
+"let g:neocomplete#enable_cursor_hold_i = 1
+" Or set this.
+"let g:neocomplete#enable_insert_char_pre = 1
+
+" AutoComplPop like behavior.
+"let g:neocomplete#enable_auto_select = 1
+
+" Shell like behavior(not recommended).
+"set completeopt+=longest
+"let g:neocomplete#enable_auto_select = 1
+"let g:neocomplete#disable_auto_complete = 1
+"inoremap <expr><TAB>  pumvisible() ? "\<Down>" : "\<C-x>\<C-u>"
+
+" Enable omni completion.
+" autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+" autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+" autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+" autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+" autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+
+" Enable heavy omni completion.
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+"let g:neocomplete#sources#omni#input_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
+"let g:neocomplete#sources#omni#input_patterns.c = '[^.[:digit:] *\t]\%(\.\|->\)'
+"let g:neocomplete#sources#omni#input_patterns.cpp = '[^.[:digit:] *\t]\%(\.\|->\)\|\h\w*::'
+" For perlomni.vim setting.
+" https://github.com/c9s/perlomni.vim
+let g:neocomplete#sources#omni#input_patterns.perl = '\h\w*->\h\w*\|\h\w*::'
+" }}}
+" Uinite {{{
+let g:unite_enable_start_insert=1
+let g:unite_source_history_yank_enable =1
+let g:unite_source_file_mru_limit = 200
+nnoremap <silent> ,// :<C-u>Unite history/yank<CR>
+nnoremap <silent> ,/, :<C-u>Unite buffer<CR>
+nnoremap <silent> ,/. :<C-u>UniteWithBufferDir -buffer-name=files file<CR>
+nnoremap <silent> ,/r :<C-u>Unite -buffer-name=register register<CR>
+nnoremap <silent> ,/u :<C-u>Unite file_mru buffer<CR>
+" }}}
+" NeoSnippet {{{
 imap <C-k>     <Plug>(neosnippet_expand_or_jump)
 smap <C-k>     <Plug>(neosnippet_expand_or_jump)
 xmap <C-k>     <Plug>(neosnippet_expand_target)
@@ -148,6 +242,22 @@ imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
 if has('conceal')
   set conceallevel=2 concealcursor=i
 endif
+" Enable snipMate compatibility feature.
+let g:neosnippet#enable_snipmate_compatibility = 1
+
+" Tell Neosnippet about the other snippets
+let g:neosnippet#snippets_directory='~/.vim/bundle/vim-snippets/snippets'
+" }}}
+" Tern: {{{
+" ******************************************************
+nnoremap <silent> <C-i>i :<C-u>TernType<CR>
+nnoremap <silent> <C-i>r :<C-u>TernRefs<CR>
+nnoremap <silent> <C-i>d :<C-u>TernDef<CR>
+" }}}
+" matchit.vim: {{{
+" ******************************************************
+source $VIMRUNTIME/macros/matchit.vim
+"}}}
 " vimshell {{{
 " -
 " ******************************************************
@@ -162,6 +272,11 @@ nnoremap <silent> ,irh :VimShell iexe rhino<CR>
 "vmap <silent> ,ss :VimShellSendString<CR>
 " 選択中に,ss: 非同期で開いたインタプリタに選択行を評価させる
 "nnoremap <silent> ,ss <S-v>:VimShellSendString<CR>
+"}}}
+" QuickRun {{{
+" -
+" ******************************************************
+nnoremap <silent> <C-q> :QuickRun<CR>
 "}}}
 " vim-smartinput: {{{
 " -
@@ -220,7 +335,7 @@ let g:indent_guides_enable_on_vim_startup=1
 let g:indent_guides_start_level=2
 let g:indent_guides_guide_size = 1
 let g:indent_guides_auto_colors=0
-					autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#333339 guifg=#404040 ctermbg=0 ctermfg=236
+autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#333339 guifg=#404040 ctermbg=0 ctermfg=236
 autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#292930 guifg=#333333 ctermbg=236 ctermfg=0
 "let g:indent_guides_color_change_percent = 30
 "}}}
@@ -275,15 +390,12 @@ let g:yankring_history_dir = "~/.vim/files/YNK"
 " }}}
 " emmet: {{{
 " ******************************************************
-let g:user_zen_leader_key = '<C-E>'
-let g:user_emmet_expandabbr_key = '<C-E>'
-let g:user_zen_settings = {
+let g:user_emmet_leader_key = '<C-E>'
+let g:user_emmet_expandabbr_key = '<TAB>'
+let g:user_emmet_settings = {
 \	'lang': 'ja',
 \	'html': {
-\		'indentation': '',
-\		'snippets': {
-\			'script:jq': "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js\" type=\"text/javascript\"></script>",
-\		},
+\		'indentation': ''
 \	},
 \	'css': {
 \		'filters': 'fc'
@@ -294,10 +406,10 @@ let g:user_zen_settings = {
 " ******************************************************
 let g:sass_compile_auto   = 1
 let g:sass_compile_cdloop = 5
-let g:sass_compile_cssdir = ['css', 'stylesheet']
+let g:sass_compile_cssdir = ['css', 'css']
 let g:sass_compile_file   = ['scss', 'sass']
 let g:sass_started_dirs   = []
-autocmd FileType scss,less,sass  setlocal sw=2 sts=2 ts=2 et
+autocmd FileType scss,less,sass  setlocal sw=4 sts=4 ts=4
 " }}}
 " lightline: {{{
 " -
@@ -343,8 +455,21 @@ let g:mta_filetypes = {
 	\ 'php' : 1,
     \}
 let g:mta_use_matchparen_group = 0
-highlight MatchTag ctermfg=black ctermbg=lightgreen guifg=black guibg=lightgreen
+highlight MatchTag ctermfg=black ctermbg=red guifg=black guibg=red
 "}}}
+" multi: TODO {{{
+" - https://github.com/terryma/vim-multiple-cursors
+" ******************************************************
+" g:multi_cursor_exit_from_visual_mode
+" g:multi_cursor_exit_from_insert_mode
+"}}}
+" inside-motion: {{{
+" - https://github.com/castor4bit/inside-motion.vim
+" ******************************************************
+let g:inside_motion_no_default_key_mappings = 1
+nmap <silent> ,l <plug><inside-motion>
+"}}}
+
 " }}}
 " [ 5. Display          ] {{{
 set number
@@ -415,18 +540,30 @@ set smarttab
 set shiftwidth=4
 set shiftround
 set nowrap
-au BufNewFile,BufRead *.scss  set nowrap tabstop=4 shiftwidth=4 noexpandtab
 function! s:toggle_indent()
     if &tabstop == 2
 		setlocal nowrap tabstop=4 shiftwidth=4 noexpandtab
     else
-		setlocal nowrap tabstop=2 shiftwidth=2 expandtab
+		setlocal nowrap tabstop=4 shiftwidth=4 expandtab
     endif
 endfunction
 nnoremap <silent> <Space><Tab> :<C-u>call <SID>toggle_indent()<CR>
 
+function! s:toggle_opacity()
+    if &transparency == 18
+		set transparency=0
+    else
+		set transparency=18
+    endif
+endfunction
+nnoremap <silent> <Space>u :<C-u>call <SID>toggle_opacity()<CR>
 
 
+
+if has("gui_running")
+  set fuoptions=maxvert,maxhorz
+  au GUIEnter * set fullscreen
+endif
 
 
 " indent
@@ -506,6 +643,8 @@ set hlsearch
 " インクリメンタルサーチを行う
 set incsearch
 set grepprg=grep\ -nH
+" 選択文字の検索
+vnoremap * "zy:let @/ = @z<CR>n
 " 検索結果ハイライト解除
 nnoremap <ESC><ESC> :nohlsearch<CR>
 nnoremap  <C-c><C-c> :<C-u>nohlsearch<cr><Esc>
@@ -516,19 +655,30 @@ nnoremap * *zz
 nnoremap # #zz
 nnoremap g* g*zz
 nnoremap g# g#zz
-nnoremap <silent> <S-Left>  :5wincmd <<CR>
-nnoremap <silent> <S-Right> :5wincmd ><CR>
-nnoremap <silent> <S-Up>    :5wincmd -<CR>
-nnoremap <silent> <S-Down>  :5wincmd +<CR>
+nnoremap <silent> <Left>  :5wincmd <<CR>
+nnoremap <silent> <Right> :5wincmd ><CR>
+nnoremap <silent> <Up>    :5wincmd -<CR>
+nnoremap <silent> <Down>  :5wincmd +<CR>
 set scrolloff=3
 " 検索時、「/」の入力をエスケープする
 "cnoremap / getcmdtype() == '/' ? '\/': '/'
+
+noremap <Space>p" vi""+p"+yi"
+noremap <Space>p' vi'"+p"+yi'
+noremap <Space>p( vi("+p"+yi(
+noremap <Space>p) vi)"+p"+yi)
+noremap <Space>p{ vi{"+p"+yi{
+noremap <Space>p} vi}"+p"+yi}
+noremap <Space>pt vit"+p"+yit
+
 
 " for USkey
 nnoremap ; :
 " nnoremap : ;
 "
 let mapleader = ","
+
+" nnoremap m @
 
 inoremap jj <ESC>
 onoremap jj <ESC>
@@ -539,6 +689,14 @@ imap <C-h> <Esc>
 imap <C-j> OB
 imap <C-k> OA
 imap <C-l> OC
+
+" SplitWindowの移動
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+
+
 " jkでのカーソルを表示行単位で移動できるように変更
 noremap j gj
 noremap k gk
@@ -549,6 +707,14 @@ inoremap <C-CR> <ESC>o
 inoremap <S-CR> <ESC>o
 inoremap <C-S-CR> <ESC>O
 
+cnoremap <C-A> <Home>
+cnoremap <C-E> <End>
+cnoremap <C-D> <Del>
+cnoremap <C-N> <Down>
+cnoremap <C-P> <Up>
+cnoremap <C-L> <Right>
+cnoremap <C-H> <Left>
+
 
 " Encode
 command! -bang -nargs=? Utf8 edit<bang> ++enc=utf-8 <args>
@@ -558,12 +724,6 @@ command! -bang -nargs=? Euc edit<bang> ++enc=euc-jp <args>
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 cnoremap <Leader><Leader> ~/
-
-" 現在のファイルをブラウザで開く
-noremap <F12> :silent ! start chrome.exe "%:p"<CR>
-noremap <Leader>0 :silent ! start firefox.exe "%:p"<CR>
-noremap <Leader>9 :silent ! start IEXPLORE.EXE "%:p"<CR>
-noremap <Leader>8 :silent ! start Safari.exe "%:p"<CR>
 
 " help shortcut key
 nnoremap <C-h>  :<C-u>help<Space>
@@ -580,11 +740,7 @@ inoremap <silent> <C-j> <C-^>
 set grepformat=%f:%l:%m,%f:%l%m,%f\ \ %l%m,%f
 set grepprg=grep\ -nH
 
-" 現在のファイルをブラウザで開く
-noremap <F12> :silent ! start chrome.app "%:p"<CR>
-noremap <Leader>0 :silent ! start firefox.exe "%:p"<CR>
-noremap <Leader>9 :silent ! start IEXPLORE.EXE "%:p"<CR>
-noremap <Leader>8 :silent ! start Safari.exe "%:p"<CR>
+source $VIMRUNTIME/macros/matchit.vim
 " }}}
 " [ 7. For CUI          ] {{{
 set ttyfast
@@ -776,6 +932,7 @@ augroup MyAutoCmd
 	" delete whitespace
 	autocmd BufWritePre * :%s/\s\+$//e
 
+	au BufEnter * execute ":lcd " . expand("%:p:h")
 augroup END
 
 " .vimrc auto load
@@ -789,4 +946,58 @@ else
     autocmd MyAutoCmd BufWritePost $MYGVIMRC if has('gui_running') | source $MYGVIMRC
 endif"
 "}}}
+" HTMLEndComment: {{{
+" <div id="hoge" class="fuga">
+" ...
+" </div>
+" 			↓
+" <div id="hoge" class="fuga">
+" ...
+" <!-- /div#hoge.fuga --></div>
+function! Endtagcomment()
+    let reg_save = @@
+
+    try
+        silent normal vaty
+    catch
+        execute "normal \<Esc>"
+        echohl ErrorMsg
+        echo 'no match html tags'
+        echohl None
+        return
+    endtry
+
+    let html = @@
+
+    let start_tag = matchstr(html, '\v(\<.{-}\>)')
+    let tag_name  = matchstr(start_tag, '\v([a-zA-Z]+)')
+
+    let id = ''
+    let id_match = matchlist(start_tag, '\vid\=["'']([^"'']+)["'']')
+    if exists('id_match[1]')
+        let id = '#' . id_match[1]
+    endif
+
+    let class = ''
+    let class_match = matchlist(start_tag, '\vclass\=["'']([^"'']+)["'']')
+    if exists('class_match[1]')
+        let class = '.' . join(split(class_match[1], '\v\s+'), '.')
+    endif
+
+    execute "normal `>va<\<Esc>`<"
+
+    let comment = g:endtagcommentFormat
+    let comment = substitute(comment, '%tag_name', tag_name, 'g')
+    let comment = substitute(comment, '%id', id, 'g')
+    let comment = substitute(comment, '%class', class, 'g')
+    let @@ = comment
+
+    normal ""P
+
+    let @@ = reg_save
+endfunction
+
+let g:endtagcommentFormat = '<!-- /%tag_name%id%class -->'
+nnoremap ,c :<C-u>call Endtagcomment()<CR>
+" }}}
 " }}}
