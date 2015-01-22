@@ -17,6 +17,7 @@ export PATH="/usr/local/sbin:$PATH"
 export PATH="$HOME/.bin:$PATH"
 export PATH="$HOME/.tmux/bin:$PATH"
 export PATH="$HOME/.tmux/plugins/bin:$PATH"
+export PATH="$HOME/.vimenv/bin:$PATH"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init - zsh)"
 

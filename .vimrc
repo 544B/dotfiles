@@ -49,7 +49,7 @@ if has('vim_starting')
 	set nocompatible
 	set runtimepath+=~/.vim/bundle/neobundle.vim/
 endif
-call neobundle#rc(expand('~/.vim/bundle/'))
+call neobundle#begin(expand('~/.vim/bundle/'))
 
 " install plugin
 NeoBundleFetch 'Shougo/neobundle.vim'
@@ -124,6 +124,8 @@ NeoBundle 'altercation/vim-colors-solarized'
 NeoBundle 'vim-scripts/Wombat'
 NeoBundle 'tomasr/molokai'
 " ====================================================================
+
+call neobundle#end()
 filetype plugin indent on
 filetype indent on
 
@@ -387,31 +389,6 @@ let g:EasyMotion_leader_key="<space>"
 let g:EasyMotion_grouping=1
 hi EasyMotionTarget ctermbg=none ctermfg=red
 hi EasyMotionShade  ctermbg=none ctermfg=blue
-" }}}
-" vimfiler {{{
-" -
-" ******************************************************
-nnoremap ,. :VimFiler -buffer-name=explorer -split -winwidth=35 -toggle -no-quit<Cr>
-autocmd! FileType vimfiler call g:my_vimfiler_settings()
-function! g:my_vimfiler_settings()
-  nmap     <buffer><expr><Cr> vimfiler#smart_cursor_map("\<Plug>(vimfiler_expand_tree)", "\<Plug>(vimfiler_edit_file)")
-  nnoremap <buffer>s          :call vimfiler#mappings#do_action('my_split')<Cr>
-  nnoremap <buffer>v          :call vimfiler#mappings#do_action('my_vsplit')<Cr>
-endfunction
-
-let my_action = { 'is_selectable' : 1 }
-function! my_action.func(candidates)
-  wincmd p
-  exec 'split '. a:candidates[0].action__path
-endfunction
-call unite#custom_action('file', 'my_split', my_action)
-
-let my_action = { 'is_selectable' : 1 }
-function! my_action.func(candidates)
-  wincmd p
-  exec 'vsplit '. a:candidates[0].action__path
-endfunction
-call unite#custom_action('file', 'my_vsplit', my_action)
 " }}}
 " YankRing.vim {{{
 " -
